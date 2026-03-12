@@ -14,9 +14,9 @@ class Timetable extends Mailable
     use Queueable, SerializesModels;
 
     
-    protected Collection $timetableEvents;
-    protected Carbon $startDate;
-    protected Carbon $endDate;
+    public Collection $timetableEvents;
+    public Carbon $startDate;
+    public Carbon $endDate;
 
     
     public function __construct(

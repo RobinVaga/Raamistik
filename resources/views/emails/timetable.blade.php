@@ -1,6 +1,7 @@
 @component('mail::message')
 # Minu tunniplaan
 
+
 **Periood:** {{ $startDate->format('d.m.Y') }} – {{ $endDate->format('d.m.Y') }}
 
 @foreach ($timetableEvents as $day => $events)
