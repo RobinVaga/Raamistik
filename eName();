@@ -1,0 +1,45 @@
+[90m= [39m[
+    {#6145
+      +"[1mTables_in_bookstore[22m": "[32mauthors[39m",
+    },
+    {#6124
+      +"[1mTables_in_bookstore[22m": "[32mcache[39m",
+    },
+    {#6175
+      +"[1mTables_in_bookstore[22m": "[32mcache_locks[39m",
+    },
+    {#6147
+      +"[1mTables_in_bookstore[22m": "[32mcomments[39m",
+    },
+    {#6139
+      +"[1mTables_in_bookstore[22m": "[32mfailed_jobs[39m",
+    },
+    {#6177
+      +"[1mTables_in_bookstore[22m": "[32mjob_batches[39m",
+    },
+    {#6242
+      +"[1mTables_in_bookstore[22m": "[32mjobs[39m",
+    },
+    {#6193
+      +"[1mTables_in_bookstore[22m": "[32mmigrations[39m",
+    },
+    {#6240
+      +"[1mTables_in_bookstore[22m": "[32mpassword_reset_tokens[39m",
+    },
+    {#6109
+      +"[1mTables_in_bookstore[22m": "[32mposts[39m",
+    },
+    {#6111
+      +"[1mTables_in_bookstore[22m": "[32mproducts[39m",
+    },
+    {#6112
+      +"[1mTables_in_bookstore[22m": "[32mreviews[39m",
+    },
+    {#1402
+      +"[1mTables_in_bookstore[22m": "[32msessions[39m",
+    },
+    {#6231
+      +"[1mTables_in_bookstore[22m": "[32musers[39m",
+    },
+  ]
+

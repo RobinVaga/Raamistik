@@ -2,11 +2,16 @@
 
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\MarkerController;
 use App\Mail\Timetable;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use Inertia\Inertia;
+use App\Http\Controllers\Auth\GoogleController;
+use Illuminate\Support\Facades\Cache;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -21,26 +26,50 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Google OAuth routes (MUST be outside auth middleware)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/auth/redirect', [GoogleController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
+
+
+/*
+|--------------------------------------------------------------------------
 | Protected routes (login required)
 |--------------------------------------------------------------------------
 */
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('/dashboard', function () {
+Route::get('/dashboard', function () {
 
-        $weather = Http::get('https://api.openweathermap.org/data/2.5/weather', [
-            'q' => 'Tallinn',
-            'appid' => env('WEATHER_API_KEY'),
-            'units' => 'metric'
-        ])->json();
+    $weather = Cache::remember('weather_tallinn', 1800, function () {
+        try {
+            $response = Http::get('https://api.openweathermap.org/data/2.5/weather', [
+                'q' => 'Kuressaare,EE',
+                'appid' => env('WEATHER_API_KEY'),
+                'units' => 'metric'
+            ]);
 
-        return Inertia::render('Dashboard', [
-            'weather' => $weather
-        ]);
+            if ($response->successful()) {
+                return $response->json();
+            }
 
-    })->name('dashboard');
+            return null;
+        } catch (\Exception $e) {
+            \Log::error('Weather API Error: ' . $e->getMessage());
+            return null;
+        }
+    });
 
+    return Inertia::render('Dashboard', [
+        'weather' => $weather
+    ]);
+})->name('dashboard');
+
+Route::get('/map', [MarkerController::class, 'index'])->name('map.index');
+Route::get('/api/markers', [MarkerController::class, 'getMarkers'])->name('markers.api');
 
 
     /*
@@ -65,6 +94,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/add-comment/{post}', [CommentController::class, 'store'])
         ->name('comments.add');
 
+         /*
+    |--------------------------------------------------------------------------
+    | Markers
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/markers', [MarkerController::class, 'store'])
+        ->name('markers.store');
+
+    Route::put('/markers/{marker}', [MarkerController::class, 'update'])
+        ->name('markers.update');
+
+    Route::delete('/markers/{marker}', [MarkerController::class, 'destroy'])
+        ->name('markers.destroy');
 });
 
 
@@ -102,6 +145,7 @@ Route::get('/mailable', function () {
 
     return new Timetable($timetableEvents, $startDate, $endDate);
 });
+
 
 
 /*
