@@ -16,6 +16,6 @@ class ProductSeeder extends Seeder
         Product::factory()
         ->count(15)
         ->has( Review::factory()->count(3),'reviews')
-    ->create();
+        ->create();
     }
 }
