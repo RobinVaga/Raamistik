@@ -8,7 +8,9 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Settings\PasswordController;
 use Laravel\Socialite\Socialite;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -38,26 +40,12 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 
-    Route::get('/auth/redirect', function () {
-        return Socialite::driver('google')->redirect();
-    })->name('google-login');
+    // Google OAuth routes
+    Route::get('/auth/redirect', [GoogleController::class, 'redirect'])
+        ->name('google-login');
 
-    Route::get('/auth/callback', function () {
-        $googleUser = Socialite::driver('google')->user();
-        
-
-        $user = User::updateOrCreate([
-            'google_id' => $googleUser->id,
-        ], [
-            'name' => $googleUser->name,
-            'email' => $googleUser->email,
-        ]);
-
-        Auth::login($user);
-
-        return redirect('/dashboard');
-        // $user->token
-    });
+    Route::get('/auth/callback', [GoogleController::class, 'callback'])
+        ->name('google.callback');
 });
 
 Route::middleware('auth')->group(function () {
@@ -75,9 +63,9 @@ Route::middleware('auth')->group(function () {
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
 
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store'])
-        ->middleware('throttle:6,1')
-        ->name('password.confirm.store');
+    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+
+    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
