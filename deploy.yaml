@@ -23,8 +23,8 @@ tasks:
     - run: |
         echo '<IfModule mod_rewrite.c>
           RewriteEngine On
-          RewriteRule ^(.*)$ public/$1 [L]
-        </IfModule>' > {{deploy_path}}/current/.htaccess
+          RewriteRule ^(.*)$ current/public/$1 [L]
+        </IfModule>' > {{deploy_path}}/.htaccess
 
 
   opcache:clear:
@@ -38,6 +38,7 @@ tasks:
     - 'artisan:optimize:clear'
     - 'artisan:optimize'
     - 'deploy:publish'
+    - 'deploy:public_htaccess'
 
 after:
   deploy:failed: deploy:unlock
