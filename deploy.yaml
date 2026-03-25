@@ -14,7 +14,7 @@ hosts:
 tasks:
   npm:production:
   - run: 'cd {{release_path}} && npm ci'
-  - run: 'cd {{release_path}} && npx vite build'
+  - run: 'cd {{release_path}} && npm run build'
 
 
   opcache:clear:
@@ -27,7 +27,6 @@ tasks:
     - 'artisan:storage:link'
     - 'artisan:optimize:clear'
     - 'artisan:optimize'
-    - 'artisan:migrate'
     - 'deploy:publish'
 
 after:
