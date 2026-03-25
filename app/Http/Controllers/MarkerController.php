@@ -12,7 +12,7 @@ class MarkerController extends Controller
     {
         $markers = Marker::orderBy('created_at', 'desc')->get();
         
-        return Inertia::render('Map/Index', [
+        return Inertia::render('map/Index', [
             'markers' => $markers
         ]);
     }

@@ -7,7 +7,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { onMounted, ref } from 'vue';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea } from '@/components/ui/textarea'
 import { Pencil, Trash2 } from 'lucide-vue-next';
 
 interface Marker {
