@@ -13,10 +13,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use Inertia\Inertia;
-use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Cache;
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -25,18 +22,8 @@ use Illuminate\Support\Facades\Cache;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    return Inertia::render('Home');
 })->name('home');
-
-
-/*
-|--------------------------------------------------------------------------
-| Google OAuth routes (MUST be outside auth middleware)
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/auth/redirect', [GoogleController::class, 'redirect'])->name('auth.google');
-Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 
 
 /*
@@ -47,74 +34,16 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
-Route::get('/dashboard', function () {
+    Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
 
-    $weather = Cache::remember('weather_tallinn', 1800, function () {
-        try {
-            $response = Http::get('https://api.openweathermap.org/data/2.5/weather', [
-                'q' => 'Kuressaare,EE',
-                'appid' => env('WEATHER_API_KEY'),
-                'units' => 'metric'
-            ]);
-
-            if ($response->successful()) {
-                return $response->json();
-            }
-
-            return null;
-        } catch (\Exception $e) {
-            \Log::error('Weather API Error: ' . $e->getMessage());
-            return null;
-        }
-    });
-
-    return Inertia::render('Dashboard', [
-        'weather' => $weather
-    ]);
-})->name('dashboard');
-
-Route::get('/map', [MarkerController::class, 'index'])->name('map.index');
-Route::get('/api/markers', [MarkerController::class, 'getMarkers'])->name('markers.api');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Posts
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])
-        ->name('posts.edit');
-
-    Route::delete('/posts/{post}', [PostController::class, 'destroy'])
-        ->name('posts.destroy');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Comments
-    |--------------------------------------------------------------------------
-    */
-
-    Route::post('/add-comment/{post}', [CommentController::class, 'store'])
-        ->name('comments.add');
-    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
-
-         /*
-    |--------------------------------------------------------------------------
-    | Markers
-    |--------------------------------------------------------------------------
-    */
-
-    Route::post('/markers', [MarkerController::class, 'store'])
-        ->name('markers.store');
-
-    Route::put('/markers/{marker}', [MarkerController::class, 'update'])
-        ->name('markers.update');
-
-    Route::delete('/markers/{marker}', [MarkerController::class, 'destroy'])
-        ->name('markers.destroy');
+    Route::get('/map', [MarkerController::class, 'index'])->name('map.index');
+    Route::get('/api/markers', [MarkerController::class, 'getMarkers'])->name('markers.api');
+    Route::post('/api/markers', [MarkerController::class, 'store'])->name('markers.store');
+    Route::put('/api/markers/{marker}', [MarkerController::class, 'update'])->name('markers.update');
+    Route::delete('/api/markers/{marker}', [MarkerController::class, 'destroy'])->name('markers.destroy');
 });
 
 
@@ -125,31 +54,6 @@ Route::get('/api/markers', [MarkerController::class, 'getMarkers'])->name('marke
 */
 
 Route::get('/mailable', function () {
-
-    $startDate = now()->startOfWeek();
-    $endDate = now()->endOfWeek();
-
-    $response = Http::get(
-        'https://tahveltp.edu.ee/hois_back/timetableevents/timetableSearch',
-        [
-            'from' => $startDate->toIsoString(),
-            'thru' => $endDate->toIsoString(),
-            'lang' => 'ET',
-            'page' => 0,
-            'schoolId' => 38,
-            'size' => 50,
-            'studentGroups' => '39248890-7051-4182-9a9a-8a82259b862b',
-        ]
-    );
-
-    $timetableEvents = collect($response['content'] ?? [])
-        ->sortBy(fn ($event) => $event['date'] . ' ' . $event['timeStart'])
-        ->groupBy(fn ($event) =>
-            Carbon::parse($event['date'])
-                ->locale('et_EE')
-                ->dayName
-        );
-
     return new Timetable($timetableEvents, $startDate, $endDate);
 });
 
@@ -163,19 +67,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
     Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
-    Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
     
-    // Checkout routes
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::post('/checkout/process', [PaymentController::class, 'process'])->name('checkout.process');
     
-    // Payment routes
-    Route::get('/payment/stripe/{order}', [PaymentController::class, 'stripe'])->name('payment.stripe');
-    Route::post('/payment/stripe/{order}/success', [PaymentController::class, 'stripeSuccess'])->name('payment.stripe.success');
-    Route::get('/payment/paypal/{order}', [PaymentController::class, 'paypal'])->name('payment.paypal');
-    Route::post('/payment/paypal/{order}/success', [PaymentController::class, 'paypalSuccess'])->name('payment.paypal.success');
-    
-    // Order routes
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 });
