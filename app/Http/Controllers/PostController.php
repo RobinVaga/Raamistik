@@ -6,6 +6,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Author;
+
 class PostController extends Controller
 {
     public function index()
@@ -17,7 +18,6 @@ class PostController extends Controller
 
     public function create()
     {
-
         return Inertia::render('posts/Create', [
             'authors' => Author::all()->mapWithKeys(fn($author) => [$author->id => $author->first_name . ' ' . $author->last_name]),
         ]);
@@ -32,18 +32,26 @@ class PostController extends Controller
             'published' => 'boolean',
         ]));
         return redirect()->route('posts.index');
-
-
     }
 
     public function show(Post $post)
     {
+        $post->load([
+            'author:id,first_name,last_name',
+            'comments' => fn ($query) => $query->latest(),
+            'comments.user:id,name',
+        ]);
+
         return Inertia::render('posts/View', [
-            'post' => $post->load([
-                'author:id,first_name,last_name',
-                'comments' => fn ($query) => $query->latest(),
-                'comments.user:id,name',
-            ]),
+            'post' => $post,
+            'auth' => [
+                'user' => [
+                    'id' => auth()->id(),
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                    'is_admin' => auth()->user()->is_admin,
+                ],
+            ],
         ]);
     }
 
@@ -72,6 +80,4 @@ class PostController extends Controller
 
         return redirect()->back()->with('success', 'Postitus kustutatud.');
     }
-
-
 }

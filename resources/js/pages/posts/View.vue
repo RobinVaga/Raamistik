@@ -1,13 +1,21 @@
-    <script setup lang="ts">
+<script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import { Trash2 } from 'lucide-vue-next';
 import { Textarea } from '@/components/ui/textarea';
-import { edit, index, show } from '@/routes/posts';
-import { add } from '@/routes/comments';
+import { index, show } from '@/routes/posts';
 import type { BreadcrumbItem } from '@/types';
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  is_admin?: boolean;
+}
 
 interface Comment {
   id: number;
@@ -15,200 +23,177 @@ interface Comment {
   user_id: number;
   content: string;
   created_at: string;
-  user?: {
-    id: number;
-    name: string;
-  } | null;
+  created_at_formatted?: string;
+  user?: User | null;
 }
 
-const props = defineProps<{
-  post: {
-    id: number;
-    title: string;
-    content: string;
-    author_id: number;
-    author: {
-      id: number;
-      first_name: string;
-      last_name: string;
-    };
-    published: boolean;
-    created_at: string;
-    updated_at: string;
-    created_at_formatted: string;
-    updated_at_formatted: string;
-    comments: Comment[];
+interface Author {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  author_id: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+  created_at_formatted: string;
+  updated_at_formatted: string;
+  author: Author;
+  comments?: Comment[];
+}
+
+interface Props {
+  post: Post;
+  auth: {
+    user: User;
   };
-}>();
+}
+
+const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Posts', href: index().url },
   { title: props.post.title, href: show.url(props.post.id) },
 ];
 
-const statusLabel = computed(() => (props.post.published ? 'Published' : 'Draft'));
-const statusClasses = computed(() =>
-  props.post.published
-    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-    : 'bg-slate-100 text-slate-600 border border-slate-200',
-);
-
-const hasComments = computed(() => props.post.comments.length > 0);
-
-const commentAuthor = (comment: Comment) => comment.user?.name ?? 'Anonymous';
-const authorInitial = (comment: Comment) => commentAuthor(comment).charAt(0).toUpperCase();
-
-
-const form = useForm({
+const commentForm = useForm({
   content: '',
 });
 
-const submit = () => {
-  form.post(add(props.post.id).url, {
-    preserveScroll:true,
+const submitComment = () => {
+  commentForm.post(`/add-comment/${props.post.id}`, {
+    preserveScroll: true,
     onSuccess: () => {
-      form.reset();
+      commentForm.reset();
     },
   });
 };
 
+const deleteComment = (commentId: number) => {
+  if (!confirm('Kas oled kindel, et soovid selle kommentaari kustutada?')) return;
+  
+  router.delete(`/comments/${commentId}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      console.log('Kommentaar kustutatud.');
+    },
+    onError: (err) => {
+      console.error(err);
+      alert('Kommentaari kustutamine ebaõnnestus.');
+    },
+  });
+};
 
+const canDeleteComment = (comment: Comment) => {
+  return props.auth.user.id === comment.user_id || props.auth.user.is_admin;
+};
 </script>
 
 <template>
-  <Head :title="props.post.title" />
+  <Head :title="post.title" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="flex h-full flex-col items-center gap-6 overflow-x-auto p-6">
-      <div class="w-full max-w-3xl space-y-8">
-        <!-- Blog header -->
-        <header class="space-y-4 rounded-xl border border-border/60 bg-card p-8 shadow-sm">
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div class="space-y-3">
-              <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Blog Post
-              </span>
+    <div class="max-w-4xl mx-auto p-6 flex flex-col gap-6">
+      <Card>
+        <CardHeader>
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <CardTitle class="text-3xl">{{ post.title }}</CardTitle>
+              <CardDescription class="mt-2">
+                By {{ post.author.first_name }} {{ post.author.last_name }} •
+                {{ post.created_at_formatted }}
+              </CardDescription>
+            </div>
+            <Badge :variant="post.published ? 'default' : 'secondary'">
+              {{ post.published ? 'Published' : 'Draft' }}
+            </Badge>
+          </div>
+        </CardHeader>
 
-              <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
-                {{ props.post.title }}
-              </h1>
+        <CardContent>
+          <div class="prose max-w-none">
+            <p class="whitespace-pre-wrap">{{ post.content }}</p>
+          </div>
 
-              <p class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                <span>Written by</span>
-                <span class="font-medium text-foreground">
-                  {{ props.post.author.first_name }} {{ props.post.author.last_name }}
-                </span>
-                <span class="text-xs text-border">•</span>
-                <span>
-                  Published
-                  <span class="font-medium text-foreground">{{ props.post.created_at_formatted }}</span>
-                </span>
+          <Separator class="my-6" />
+
+          <div class="text-sm text-muted-foreground">
+            <p>Last updated: {{ post.updated_at_formatted }}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- Kommentaaride sektsioon -->
+      <Card>
+        <CardHeader>
+          <CardTitle>Kommentaarid ({{ post.comments?.length || 0 }})</CardTitle>
+        </CardHeader>
+
+        <CardContent class="space-y-6">
+          <!-- Kommentaaride nimekiri -->
+          <div v-if="post.comments && post.comments.length > 0" class="space-y-4">
+            <div
+              v-for="comment in post.comments"
+              :key="comment.id"
+              class="border rounded-lg p-4 space-y-2"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <p class="font-semibold text-sm">
+                    {{ comment.user?.name || 'Tundmatu kasutaja' }}
+                  </p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ comment.created_at_formatted || comment.created_at }}
+                  </p>
+                </div>
+                <Button
+                  v-if="canDeleteComment(comment)"
+                  size="icon"
+                  variant="ghost"
+                  @click="deleteComment(comment.id)"
+                  class="text-destructive hover:text-destructive"
+                >
+                  <Trash2 class="h-4 w-4" />
+                </Button>
+              </div>
+              <p class="text-sm whitespace-pre-wrap">{{ comment.content }}</p>
+            </div>
+          </div>
+
+          <div v-else class="text-center text-muted-foreground py-8">
+            <p>Kommentaare pole veel lisatud.</p>
+          </div>
+
+          <Separator />
+
+          <!-- Kommentaari lisamise vorm -->
+          <form @submit.prevent="submitComment" class="space-y-4">
+            <div>
+              <Label for="comment">Lisa kommentaar</Label>
+              <Textarea
+                id="comment"
+                v-model="commentForm.content"
+                rows="4"
+                placeholder="Kirjuta oma kommentaar siia..."
+                :disabled="commentForm.processing"
+              />
+              <p v-if="commentForm.errors.content" class="text-red-600 text-sm mt-1">
+                {{ commentForm.errors.content }}
               </p>
             </div>
 
-            <div class="flex flex-col items-end gap-3">
-              <span
-                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
-                :class="statusClasses"
-              >
-                {{ statusLabel }}
-              </span>
-
-              <div class="flex flex-wrap items-center gap-2">
-                <Button as-child size="sm" variant="outline">
-                  <Link :href="edit.url(props.post.id)">Edit Post</Link>
-                </Button>
-
-                <Button as-child size="sm" variant="ghost">
-                  <Link :href="index().url">Back to Posts</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <dl class="mt-4 grid gap-4 border-t border-border/40 pt-4 text-xs text-muted-foreground sm:grid-cols-3">
-            <div class="space-y-1">
-              <dt class="uppercase tracking-wide">Created</dt>
-              <dd class="space-y-0.5 text-foreground">
-                <div class="text-sm">{{ props.post.created_at_formatted }}</div>
-                <div class="text-xs text-muted-foreground">{{ props.post.created_at }}</div>
-              </dd>
-            </div>
-
-            <div class="space-y-1">
-              <dt class="uppercase tracking-wide">Last updated</dt>
-              <dd class="space-y-0.5 text-foreground">
-                <div class="text-sm">{{ props.post.updated_at_formatted }}</div>
-                <div class="text-xs text-muted-foreground">{{ props.post.updated_at }}</div>
-              </dd>
-            </div>
-
-            <div class="space-y-1">
-              <dt class="uppercase tracking-wide">Post ID</dt>
-              <dd class="text-sm text-foreground">#{{ props.post.id }}</dd>
-            </div>
-          </dl>
-        </header>
-
-        <section class="rounded-xl border border-border/60 bg-background p-8 shadow-sm">
-          <article class="prose prose-slate max-w-none text-base leading-relaxed text-foreground/90 dark:prose-invert">
-            <p class="whitespace-pre-line">
-              {{ props.post.content }}
-            </p>
-          </article>
-        </section>
-      </div>
-
-      <section class="w-full max-w-3xl rounded-xl border border-border/60 bg-background p-8 shadow-sm">
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h3 class="text-lg font-semibold text-foreground">Comments</h3>
-            <div class="pb-6">
-              <form @submit.prevent="submit" id="comment-form">
-                <Textarea v-model="form.content"></Textarea>
-              </form>
-              <div class="flex mt-4 justify-end">
-                <Button form="comment-form" type="submit">Submit</Button>
-              </div>
-            </div>
-            <p class="text-sm text-muted-foreground">
-              {{ hasComments ? 'Join the conversation below.' : 'No comments yet — be the first to share your thoughts.' }}
-            </p>
-          </div>
-          <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground">
-            {{ props.post.comments.length }}
-          </span>
-        </div>
-
-        <template v-if="hasComments">
-          <ul class="space-y-4">
-            <li
-              v-for="comment in props.post.comments"
-              :key="comment.id"
-              class="rounded-xl border border-border/40 bg-muted/30 p-4"
-            >
-              <div class="flex items-start gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground/80">
-                  {{ authorInitial(comment) }}
-                </div>
-                <div class="flex-1 space-y-1">
-                  <div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                    <span class="font-medium text-foreground">{{ commentAuthor(comment) }}</span>
-                    <span class="text-xs text-border">•</span>
-                    <span>{{ comment.created_at }}</span>
-                  </div>
-                  <p class="text-base text-foreground">{{ comment.content }}</p>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </template>
-        <template v-else>
-          <div class="rounded-lg border border-dashed border-border/70 bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-            No comments yet. Start the discussion by leaving the first comment.
-          </div>
-        </template>
-      </section>
+            <Button type="submit" :disabled="commentForm.processing || !commentForm.content">
+              Lisa kommentaar
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   </AppLayout>
 </template>

@@ -42,6 +42,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
+Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 Route::get('/dashboard', function () {
 
     $weather = Cache::remember('weather_tallinn', 1800, function () {
@@ -93,6 +94,7 @@ Route::get('/api/markers', [MarkerController::class, 'getMarkers'])->name('marke
 
     Route::post('/add-comment/{post}', [CommentController::class, 'store'])
         ->name('comments.add');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
          /*
     |--------------------------------------------------------------------------
