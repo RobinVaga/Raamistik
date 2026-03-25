@@ -37,10 +37,10 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 
     // Google OAuth routes
-    Route::get('/auth/redirect', [GoogleController::class, 'redirect'])
+    Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])
         ->name('google-login');
 
-    Route::get('/auth/callback', [GoogleController::class, 'callback'])
+    Route::get('/auth/google/callback', [GoogleController::class, 'callback'])
         ->name('google.callback');
 });
 
