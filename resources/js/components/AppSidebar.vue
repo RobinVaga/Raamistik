@@ -6,8 +6,9 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, FileText, Folder, LayoutGrid } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import posts from '@/routes/posts';
 
 const mainNavItems: NavItem[] = [
     {
@@ -15,6 +16,11 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'Posts',
+        href: posts.index().url,
+        icon: FileText,
+    },  
 ];
 
 const footerNavItems: NavItem[] = [
