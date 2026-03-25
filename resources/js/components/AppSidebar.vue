@@ -9,6 +9,7 @@ import { Link } from '@inertiajs/vue3';
 import { BookOpen, FileText, Folder, LayoutGrid } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import posts from '@/routes/posts';
+import shop from '@/routes/shop';
 
 const mainNavItems: NavItem[] = [
     {
@@ -21,6 +22,11 @@ const mainNavItems: NavItem[] = [
         href: posts.index().url,
         icon: FileText,
     },  
+    {
+        title: 'Shop',
+        href: shop.index().url,
+        icon: BookOpen,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
