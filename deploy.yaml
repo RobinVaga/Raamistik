@@ -2,15 +2,15 @@ import:
   - recipe/laravel.php
 
 config:
-  repository: 'https://github.com/K-Siim/Raamistikud'
+  repository: 'https://github.com/RobinVaga/Raamistik'
   keep_releases: 2
 
 hosts:
   stage:
-    hostname: 'ta24siim.itmajakas.ee'
-    http_user: virt137763
-    remote_user: virt137763
-    deploy_path: '~/domeenid/www.ta24siim.itmajakas.ee/raamistikud'
+    hostname: 'ta24vaga.itmajakas.ee'
+    http_user: virt137764
+    remote_user: virt137764
+    deploy_path: '~/domeenid/www.ta24vaga.itmajakas.ee/bookstore'
 tasks:
   npm:production:
   - run: 'cd {{release_path}} && npm ci'
@@ -27,6 +27,7 @@ tasks:
     - 'artisan:storage:link'
     - 'artisan:optimize:clear'
     - 'artisan:optimize'
+    - 'artisan:migrate'
     - 'deploy:publish'
 
 after:

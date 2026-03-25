@@ -24,4 +24,12 @@ export default defineConfig({
             },
         }),
     ],
+        build: {
+        manifest: true,
+        rollupOptions: {
+            input: {
+                app: 'resources/js/app.ts',
+            },
+        },
+    },
 });
