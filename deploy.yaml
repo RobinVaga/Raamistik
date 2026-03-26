@@ -11,8 +11,6 @@ hosts:
     http_user: virt137764
     remote_user: virt137764
     deploy_path: '~/domeenid/www.ta24vaga.itmajakas.ee/bookstore'
-    shared_files:
-     - .env
 
 tasks:
   npm:production:
@@ -29,6 +27,7 @@ tasks:
     - 'artisan:storage:link'
     - 'artisan:optimize:clear'
     - 'artisan:optimize'
+    - 'artisan:migrate'
     - 'deploy:publish'
 
 after:
