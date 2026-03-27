@@ -33,11 +33,28 @@ Route::get('/', function () {
 */
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        $weather = Cache::remember('weather_tallinn', 1800, function () {
+            try {
+                $response = Http::get('https://api.openweathermap.org/data/2.5/weather', [
+                    'q' => 'Kuressaare,EE',
+                    'appid' => env('WEATHER_API_KEY'),
+                    'units' => 'metric'
+                ]);
+                if ($response->successful()) {
+                    return $response->json();
+                }
+            } catch (\Exception $e) {
+                return null;
+            }
+        });
+
+        return Inertia::render('Dashboard', [
+            'weather' => $weather
+        ]);
+    })->name('dashboard');
 
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
 
     Route::get('/map', [MarkerController::class, 'index'])->name('map.index');
     Route::get('/api/markers', [MarkerController::class, 'getMarkers'])->name('markers.api');

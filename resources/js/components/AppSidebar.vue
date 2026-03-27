@@ -6,10 +6,11 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FileText, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, CompassIcon, FileText, Folder, LayoutGrid, MapIcon } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import posts from '@/routes/posts';
 import shop from '@/routes/shop';
+import map from '@/routes/map';
 
 const mainNavItems: NavItem[] = [
     {
@@ -18,7 +19,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Posts',
+        title: 'Blog',
         href: posts.index().url,
         icon: FileText,
     },  
@@ -26,6 +27,11 @@ const mainNavItems: NavItem[] = [
         title: 'Shop',
         href: shop.index().url,
         icon: BookOpen,
+    },
+    {
+        title: 'Map',
+        href: map.index().url,
+        icon: MapIcon,
     },
 ];
 

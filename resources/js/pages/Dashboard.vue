@@ -2,10 +2,12 @@
 import AppLayout from '@/layouts/AppLayout.vue'
 import { dashboard } from '@/routes'
 import { WeatherData, type BreadcrumbItem } from '@/types'
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import PlaceholderPattern from '../components/PlaceholderPattern.vue'
 import { Map } from 'lucide-vue-next'
 import Mapview from '@/components/MapView.vue'
+import posts from '@/routes/posts';
+import shop from '@/routes/shop';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,7 +45,7 @@ defineProps<{
                         {{ weather?.name }}, {{ weather?.sys?.country }}
                     </p>
 
-                    <div class="mt-5 flex gap-5 text-sm opacity-90">
+                    <div class="mt-3 flex gap-5 text-sm opacity-90">
                         <span>💨 {{ weather?.wind?.speed }} m/s</span>
                         <span>💧 {{ weather?.main?.humidity }}%</span>
                     </div>
@@ -64,13 +66,27 @@ defineProps<{
                     <p class="opacity-70">Loading weather...</p>
                 </div>
 
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
+                <!-- Blog Link Card -->
+                <Link
+                    :href="posts.index().url"
+                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border flex items-center justify-center hover:bg-sidebar-accent transition-colors group"
+                >
+                    <div class="flex flex-col items-center gap-2">
+                        <BookOpen class="size-8 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors" />
+                        <span class="text-sm font-medium text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors">Blog</span>
+                    </div>
+                </Link>
 
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
+                <!-- Shop Link Card -->
+                <Link
+                    :href="shop.index().url"
+                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border flex items-center justify-center hover:bg-sidebar-accent transition-colors group"
+                >
+                    <div class="flex flex-col items-center gap-2">
+                        <ShoppingCart class="size-8 text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors" />
+                        <span class="text-sm font-medium text-sidebar-foreground/60 group-hover:text-sidebar-foreground transition-colors">Shop</span>
+                    </div>
+                </Link>
             </div>
 
             <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">

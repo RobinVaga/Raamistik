@@ -24,14 +24,14 @@ defineProps<{
     <AppLayout>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-black overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <div>
                                 <h2 class="text-2xl font-bold text-black">Interaktiivne Kaart</h2>
-                                <p class="text-gray-600 mt-1">Kliki kaardil, et lisada uus marker</p>
+                                <p class="text-white">Kliki kaardil, et lisada uus marker</p>
                             </div>
-                            <div class="text-sm text-gray-500">
+                            <div class="text-sm text-white">
                                 Markereid kokku: {{ markers.length }}
                             </div>
                         </div>
