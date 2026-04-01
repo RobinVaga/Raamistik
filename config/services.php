@@ -35,7 +35,7 @@ return [
         ],
     ],
     'weather' => [
-        'key' => env('WEATHER_API'),
+        'key' => env('WEATHER_API_KEY'),
     ],
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),

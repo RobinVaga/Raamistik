@@ -31,7 +31,7 @@ defineProps<{
                     </h2>
                 </div>
 
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                <div class="overflow-hidden bg-black shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <div
                             class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"

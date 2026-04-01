@@ -53,9 +53,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'weather' => $weather
         ]);
     })->name('dashboard');
-
-    Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
-
     Route::get('/map', [MarkerController::class, 'index'])->name('map.index');
     Route::get('/api/markers', [MarkerController::class, 'getMarkers'])->name('markers.api');
     Route::post('/api/markers', [MarkerController::class, 'store'])->name('markers.store');

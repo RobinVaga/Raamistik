@@ -45,11 +45,11 @@ class PostController extends Controller
         return Inertia::render('posts/View', [
             'post' => $post,
             'auth' => [
-                'user' => [
-                    'id' => auth()->id(),
-                    'name' => auth()->user()->name,
-                    'email' => auth()->user()->email,
-                    'is_admin' => auth()->user()->is_admin,
+            'user' => [
+            'id' => auth()->id(),
+            'name' => auth()->user()->name,
+            'email' => auth()->user()->email,
+            'is_admin' => auth()->user()->is_admin,
                 ],
             ],
         ]);

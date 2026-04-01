@@ -11,7 +11,7 @@ import PaginationNext from '@/components/ui/pagination/PaginationNext.vue';
 import PaginationPrevious from '@/components/ui/pagination/PaginationPrevious.vue';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { destroy, edit, show, index } from '@/routes/posts';
+import { destroy, edit, show, index, create } from '@/routes/posts';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { MoreVertical } from 'lucide-vue-next';
@@ -108,7 +108,12 @@ const deletePost = (postId: number) => {
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-col gap-4 overflow-x-auto rounded-xl p-4">
-      <!-- <pre>{{ posts }}</pre> -->
+      <!-- Create Post Button -->
+      <div class="flex justify-end mb-4">
+        <Link :href="create().url">
+          <Button>Create Post</Button>
+        </Link>
+      </div>
 
       <Table>
         <TableCaption>A list of your recent blog posts.</TableCaption>
