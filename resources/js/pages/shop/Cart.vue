@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, router, useForm } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Minus, Plus, Trash2 } from 'lucide-vue-next'
@@ -25,17 +25,20 @@ const props = defineProps<{
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Shop', href: '/shop' },
-    { label: 'Cart' }
+    {
+        title: 'Cart',
+        href: '/cart',
+    },
 ]
 
 const updateQuantity = (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) return
     
-    router.put(`/cart/${itemId}`, {
+    router.patch(`/cart/${itemId}`, {
         quantity: newQuantity
     }, {
-        preserveScroll: true
+        preserveScroll: true,
+        preserveState: true
     })
 }
 
@@ -58,14 +61,14 @@ const proceedToCheckout = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                <div class="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
                     <div class="p-6">
-                        <h2 class="mb-6 text-2xl font-bold text-gray-900">
+                        <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">
                             Shopping Cart
                         </h2>
 
                         <div v-if="cartItems.length === 0" class="py-12 text-center">
-                            <p class="mb-4 text-gray-500">Your cart is empty</p>
+                            <p class="mb-4 text-gray-500 dark:text-gray-400">Your cart is empty</p>
                             <Button @click="router.visit('/shop')">
                                 Continue Shopping
                             </Button>
@@ -75,11 +78,11 @@ const proceedToCheckout = () => {
                             <Card 
                                 v-for="item in cartItems" 
                                 :key="item.id"
-                                class="mb-4"
+                                class="mb-4 border-gray-200 dark:border-gray-700 dark:bg-gray-900"
                             >
                                 <CardContent class="p-6">
                                     <div class="flex items-center gap-6">
-                                        <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200">
+                                        <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700">
                                             <img
                                                 v-if="item.product.image"
                                                 :src="item.product.image"
@@ -88,17 +91,17 @@ const proceedToCheckout = () => {
                                             />
                                             <div
                                                 v-else
-                                                class="flex h-full items-center justify-center text-gray-400 text-sm"
+                                                class="flex h-full items-center justify-center text-sm text-gray-400 dark:text-gray-500"
                                             >
                                                 No Image
                                             </div>
                                         </div>
                                         
                                         <div class="flex-1">
-                                            <h3 class="text-lg font-semibold text-gray-900">
+                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                                 {{ item.product.name }}
                                             </h3>
-                                            <p class="text-gray-600">
+                                            <p class="text-gray-600 dark:text-gray-400">
                                                 €{{ Number(item.product.price).toFixed(2) }}
                                             </p>
                                         </div>
@@ -109,11 +112,12 @@ const proceedToCheckout = () => {
                                                 variant="outline"
                                                 @click="updateQuantity(item.id, item.quantity - 1)"
                                                 :disabled="item.quantity <= 1"
+                                                class="dark:border-gray-600 dark:hover:bg-gray-800"
                                             >
                                                 <Minus class="h-4 w-4" />
                                             </Button>
                                             
-                                            <span class="w-12 text-center font-semibold">
+                                            <span class="w-12 text-center font-semibold text-gray-900 dark:text-gray-100">
                                                 {{ item.quantity }}
                                             </span>
                                             
@@ -122,13 +126,14 @@ const proceedToCheckout = () => {
                                                 variant="outline"
                                                 @click="updateQuantity(item.id, item.quantity + 1)"
                                                 :disabled="item.quantity >= item.product.stock_quantity"
+                                                class="dark:border-gray-600 dark:hover:bg-gray-800"
                                             >
                                                 <Plus class="h-4 w-4" />
                                             </Button>
                                         </div>
 
                                         <div class="min-w-[100px] text-right">
-                                            <p class="text-lg font-bold text-gray-900">
+                                            <p class="text-lg font-bold text-gray-900 dark:text-gray-100">
                                                 €{{ Number(item.subtotal).toFixed(2) }}
                                             </p>
                                         </div>
@@ -144,12 +149,12 @@ const proceedToCheckout = () => {
                                 </CardContent>
                             </Card>
 
-                            <Card class="mt-6">
+                            <Card class="mt-6 border-gray-200 dark:border-gray-700 dark:bg-gray-900">
                                 <CardHeader>
-                                    <CardTitle>Order Summary</CardTitle>
+                                    <CardTitle class="dark:text-gray-100">Order Summary</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div class="flex items-center justify-between text-2xl font-bold text-gray-900">
+                                    <div class="flex items-center justify-between text-2xl font-bold text-gray-900 dark:text-gray-100">
                                         <span>Total:</span>
                                         <span>€{{ Number(total).toFixed(2) }}</span>
                                     </div>
@@ -158,7 +163,7 @@ const proceedToCheckout = () => {
                                     <Button
                                         variant="outline"
                                         @click="router.visit('/shop')"
-                                        class="flex-1"
+                                        class="flex-1 dark:border-gray-600 dark:hover:bg-gray-800"
                                     >
                                         Continue Shopping
                                     </Button>
