@@ -32,7 +32,7 @@ class CartController extends Controller
 
         $total = $cartItems->sum('subtotal');
 
-        return Inertia::render('cart/Index', [
+        return Inertia::render('shop/Cart', [
             'cartItems' => $cartItems,
             'total' => $total,
         ]);

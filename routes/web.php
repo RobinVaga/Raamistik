@@ -53,11 +53,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'weather' => $weather
         ]);
     })->name('dashboard');
+    
+
+    Route::post('/add-comment/{post}', [CommentController::class, 'store'])
+    ->name('comments.add');
+
     Route::get('/map', [MarkerController::class, 'index'])->name('map.index');
+    
+
     Route::get('/api/markers', [MarkerController::class, 'getMarkers'])->name('markers.api');
-    Route::post('/api/markers', [MarkerController::class, 'store'])->name('markers.store');
-    Route::put('/api/markers/{marker}', [MarkerController::class, 'update'])->name('markers.update');
-    Route::delete('/api/markers/{marker}', [MarkerController::class, 'destroy'])->name('markers.destroy');
+    
+
+    Route::get('/markers/{marker}', [MarkerController::class, 'show'])->name('markers.show');
+    Route::post('/markers', [MarkerController::class, 'store'])->name('markers.store');
+    Route::put('/markers/{marker}', [MarkerController::class, 'update'])->name('markers.update');
+    Route::delete('/markers/{marker}', [MarkerController::class, 'destroy'])->name('markers.destroy');
 });
 
 

@@ -44,12 +44,12 @@ const submit = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <div class="mx-auto h-full w-full max-w-2xl bg-muted p-4">
-                <h3 class="text-lg font-medium">Post create</h3>
+                <h3 class="text-lg font-medium">Create a post</h3>
                     <form @submit.prevent="submit">
                         <div class="grid gap-4 mt-6">
                             <div>
                                 <Label for="title">Title</Label>
-                                <Input class="mt-1" name="title" v-model="form.title" />
+                                <Input class="mt-1 text-foreground" name="title" v-model="form.title" />
                                 <InputError :message="form.errors.title"/>
                             </div>
                             <div>

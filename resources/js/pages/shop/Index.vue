@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, Link } from '@inertiajs/vue3'
+import { Button } from '@/components/ui/button'
+import { ShoppingCart } from 'lucide-vue-next'
 
 interface Product {
     id: number
@@ -16,6 +18,7 @@ interface Product {
 
 defineProps<{
     products: Product[]
+    cartItemsCount?: number
 }>()
 </script>
 
@@ -25,10 +28,21 @@ defineProps<{
     <AppLayout>
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-semibold text-gray-800">
+                <div class="mb-6 flex items-center justify-between">
+                    <h2 class="text-2xl font-semibold text-white">
                         Shop
                     </h2>
+                    
+                    <Link href="/cart">
+                        <Button variant="outline" class="relative">
+                            <ShoppingCart class="h-5 w-5" />
+                            <span v-if="cartItemsCount && cartItemsCount > 0" 
+                                  class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                                {{ cartItemsCount }}
+                            </span>
+                            <span class="ml-2">Cart</span>
+                        </Button>
+                    </Link>
                 </div>
 
                 <div class="overflow-hidden bg-black shadow-sm sm:rounded-lg">

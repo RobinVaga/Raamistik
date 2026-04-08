@@ -4,7 +4,7 @@ import { dashboard } from '@/routes'
 import { WeatherData, type BreadcrumbItem } from '@/types'
 import { Head, Link } from '@inertiajs/vue3'
 import PlaceholderPattern from '../components/PlaceholderPattern.vue'
-import { Map } from 'lucide-vue-next'
+import { Map, BookOpen, ShoppingCart } from 'lucide-vue-next'
 import Mapview from '@/components/MapView.vue'
 import posts from '@/routes/posts';
 import shop from '@/routes/shop';
