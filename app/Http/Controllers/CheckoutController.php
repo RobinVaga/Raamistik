@@ -26,7 +26,7 @@ class CheckoutController extends Controller
             return $item->quantity * $item->product->price;
         });
 
-        return Inertia::render('checkout/Index', [
+        return Inertia::render('shop/Checkout', [
             'cartItems' => $cartItems->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -41,7 +41,13 @@ class CheckoutController extends Controller
                 ];
             }),
             'total' => $total,
-            'stripePublicKey' => config('services.stripe.key'),
+            'user' => auth()->user(),
+            'breadcrumbs' => [
+                ['label' => 'Home', 'href' => '/'],
+                ['label' => 'Shop', 'href' => '/shop'],
+                ['label' => 'Cart', 'href' => '/cart'],
+                ['label' => 'Checkout', 'href' => '/checkout'],
+            ],
         ]);
     }
 
@@ -52,6 +58,10 @@ class CheckoutController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'postal_code' => 'required|string|max:20',
+            'country' => 'required|string|max:255',
             'payment_method' => 'required|string|in:stripe,paypal',
         ]);
 
@@ -83,6 +93,10 @@ class CheckoutController extends Controller
                 'last_name' => $validated['last_name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
+                'address' => $validated['address'],
+                'city' => $validated['city'],
+                'postal_code' => $validated['postal_code'],
+                'country' => $validated['country'],
                 'total_amount' => $total,
                 'payment_status' => 'pending',
                 'payment_method' => $validated['payment_method'],
@@ -103,6 +117,9 @@ class CheckoutController extends Controller
                 $item->product->decrement('stock_quantity', $item->quantity);
             }
 
+            // Tühjenda ostukorv
+            auth()->user()->cartItems()->delete();
+
             DB::commit();
 
             // Suuna maksele
@@ -114,7 +131,7 @@ class CheckoutController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Tellimuse loomine ebaõnnestus: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Tellimuse loomine ebaõnnestus: ' . $e->getMessage()]);
         }
     }
 }
