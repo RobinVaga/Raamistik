@@ -5,21 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class CheckoutController extends Controller
 {
     public function index()
     {
-        $cartItems = auth()->user()
-            ->cartItems()
-            ->with('product')
-            ->get();
-
+        $cartItems = auth()->user()->cartItems()->with('product')->get();
+        
         if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')
-                ->with('error', 'Ostukorv on tühi!');
+            return redirect()->route('cart')->with('error', 'Your cart is empty!');
         }
 
         $total = $cartItems->sum(function ($item) {
@@ -27,27 +23,10 @@ class CheckoutController extends Controller
         });
 
         return Inertia::render('shop/Checkout', [
-            'cartItems' => $cartItems->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'quantity' => $item->quantity,
-                    'subtotal' => $item->subtotal,
-                    'product' => [
-                        'id' => $item->product->id,
-                        'name' => $item->product->name,
-                        'price' => $item->product->price,
-                        'image' => $item->product->image,
-                    ],
-                ];
-            }),
+            'cartItems' => $cartItems,
             'total' => $total,
             'user' => auth()->user(),
-            'breadcrumbs' => [
-                ['label' => 'Home', 'href' => '/'],
-                ['label' => 'Shop', 'href' => '/shop'],
-                ['label' => 'Cart', 'href' => '/cart'],
-                ['label' => 'Checkout', 'href' => '/checkout'],
-            ],
+            'stripePublicKey' => config('services.stripe.key'),
         ]);
     }
 
@@ -68,13 +47,13 @@ class CheckoutController extends Controller
         $cartItems = auth()->user()->cartItems()->with('product')->get();
 
         if ($cartItems->isEmpty()) {
-            return back()->with('error', 'Ostukorv on tühi!');
+            return back()->with('error', 'Your cart is empty!');
         }
 
-        // Kontrolli laoseisu
+        // Check stock
         foreach ($cartItems as $item) {
             if ($item->product->stock_quantity < $item->quantity) {
-                return back()->with('error', "Toode '{$item->product->name}' pole piisavas koguses laos.");
+                return back()->with('error', "Product '{$item->product->name}' is not available in sufficient quantity.");
             }
         }
 
@@ -85,7 +64,7 @@ class CheckoutController extends Controller
         try {
             DB::beginTransaction();
 
-            // Loo tellimus
+            // Create order
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'order_number' => Order::generateOrderNumber(),
@@ -102,7 +81,7 @@ class CheckoutController extends Controller
                 'payment_method' => $validated['payment_method'],
             ]);
 
-            // Loo tellimuse read
+            // Create order items
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -113,16 +92,16 @@ class CheckoutController extends Controller
                     'subtotal' => $item->quantity * $item->product->price,
                 ]);
 
-                // Vähenda laoseisu
+                // Decrease stock
                 $item->product->decrement('stock_quantity', $item->quantity);
             }
 
-            // Tühjenda ostukorv
+            // Clear cart
             auth()->user()->cartItems()->delete();
 
             DB::commit();
 
-            // Suuna maksele
+            // Redirect to payment
             if ($validated['payment_method'] === 'stripe') {
                 return redirect()->route('payment.stripe', ['order' => $order->id]);
             } else {
@@ -131,7 +110,7 @@ class CheckoutController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Tellimuse loomine ebaõnnestus: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Order creation failed: ' . $e->getMessage()]);
         }
     }
 }

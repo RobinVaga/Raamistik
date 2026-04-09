@@ -21,7 +21,7 @@ import {
 interface CartItem {
     id: number
     quantity: number
-    subtotal: number
+    subtotal?: number  // Make optional
     product: {
         id: number
         name: string
@@ -51,7 +51,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'cart', href: '/cart' },
     { title: 'Checkout', href: '/checkout' },
 ]
-
 
 const isProcessing = ref(false)
 
@@ -85,8 +84,27 @@ const isFormValid = computed(() => {
     )
 })
 
-const formatPrice = (price: number | string) => {
+// Calculate subtotal for each item if not provided
+const getItemSubtotal = (item: CartItem): number => {
+    if (item.subtotal !== undefined && item.subtotal !== null) {
+        return item.subtotal
+    }
+    return item.product.price * item.quantity
+}
+
+const formatPrice = (price: number | string | undefined | null): string => {
+    // Handle undefined, null, or invalid values
+    if (price === undefined || price === null || isNaN(Number(price))) {
+        return '€0.00'
+    }
+    
     const numPrice = typeof price === 'string' ? parseFloat(price) : price
+    
+    // Additional check after conversion
+    if (isNaN(numPrice)) {
+        return '€0.00'
+    }
+    
     return `€${numPrice.toFixed(2)}`
 }
 
@@ -97,14 +115,11 @@ const handleSubmit = () => {
 
     isProcessing.value = true
 
-    const endpoint = form.payment_method === 'stripe' 
-        ? '/checkout/stripe' 
-        : '/checkout/paypal'
-
-    form.post(endpoint, {
+    // Submit to /checkout to create the order first
+    form.post('/checkout', {
         preserveScroll: true,
         onSuccess: () => {
-            // Payment processing will redirect
+            // The controller will redirect to the payment page
         },
         onError: (errors) => {
             console.error('Checkout errors:', errors)
@@ -264,7 +279,7 @@ const handleSubmit = () => {
                                             </div>
 
                                             <div class="space-y-2">
-                                                <Label for="postal_code" class="text-gray-700 dark:text-gray-300">
+<Label for="postal_code" class="text-gray-700 dark:text-gray-300">
                                                     Postal Code *
                                                 </Label>
                                                 <Input
@@ -369,39 +384,28 @@ const handleSubmit = () => {
                                                         :alt="item.product.name"
                                                         class="h-full w-full object-cover"
                                                     />
-                                                    <div
-                                                        v-else
-                                                        class="flex h-full items-center justify-center text-xs text-gray-400 dark:text-gray-500"
-                                                    >
-                                                        No Image
+                                                    <div v-else class="h-full w-full flex items-center justify-center">
+                                                        <ShoppingCart class="w-8 h-8 text-gray-400" />
                                                     </div>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                                         {{ item.product.name }}
-                                                    </p>
+                                                    </h3>
                                                     <p class="text-sm text-gray-500 dark:text-gray-400">
                                                         Qty: {{ item.quantity }}
                                                     </p>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {{ formatPrice(getItemSubtotal(item)) }}
+                                                    </p>
                                                 </div>
-                                                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                    {{ formatPrice(item.subtotal) }}
-                                                </p>
                                             </div>
                                         </div>
 
-                                        <div class="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                                                <span>Subtotal</span>
-                                                <span>{{ formatPrice(total) }}</span>
-                                            </div>
-                                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                                                <span>Shipping</span>
-                                                <span>Free</span>
-                                            </div>
-                                            <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-gray-100 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                <span>Total</span>
-                                                <span>{{ formatPrice(total) }}</span>
+                                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
+                                            <div class="flex justify-between text-base font-medium text-gray-900 dark:text-gray-100">
+                                                <p>Total</p>
+                                                <p>{{ formatPrice(total) }}</p>
                                             </div>
                                         </div>
 
@@ -412,11 +416,11 @@ const handleSubmit = () => {
                                         >
                                             <Loader2 v-if="isProcessing" class="w-4 h-4 mr-2 animate-spin" />
                                             <span v-if="isProcessing">Processing...</span>
-                                            <span v-else>Place Order</span>
+                                            <span v-else>Proceed to Payment</span>
                                         </Button>
 
                                         <p class="text-xs text-center text-gray-500 dark:text-gray-400">
-                                            By placing your order, you agree to our terms and conditions
+                                            Your payment information is secure and encrypted
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -427,4 +431,4 @@ const handleSubmit = () => {
             </div>
         </div>
     </AppLayout>
-</template>
+</template>                                           

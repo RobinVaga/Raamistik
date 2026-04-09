@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
@@ -12,43 +13,62 @@ class PaymentController extends Controller
 {
     public function stripe(Order $order)
     {
+        // Verify order belongs to authenticated user
         if ($order->user_id !== auth()->id()) {
-            abort(403);
+            abort(403, 'Unauthorized access to this order.');
         }
 
+        // Check if order is already processed
         if ($order->payment_status !== 'pending') {
             return redirect()->route('orders.show', $order)
-                ->with('info', 'See tellimus on juba töödeldud.');
+                ->with('info', 'This order has already been processed.');
         }
 
+        // Set Stripe API key
         Stripe::setApiKey(config('services.stripe.secret'));
 
         try {
-            $paymentIntent = PaymentIntent::create([
-                'amount' => $order->total_amount * 100, // cents
-                'currency' => 'eur',
-                'metadata' => [
-                    'order_id' => $order->id,
-                    'order_number' => $order->order_number,
-                ],
-            ]);
+            // Create or retrieve payment intent
+            if ($order->stripe_payment_intent_id) {
+                // Retrieve existing payment intent
+                $paymentIntent = PaymentIntent::retrieve($order->stripe_payment_intent_id);
+            } else {
+                // Create new payment intent
+                $paymentIntent = PaymentIntent::create([
+                    'amount' => round($order->total_amount * 100), // Convert to cents
+                    'currency' => 'eur',
+                    'automatic_payment_methods' => [
+                        'enabled' => true,
+                    ],
+                    'metadata' => [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'user_id' => auth()->id(),
+                    ],
+                ]);
 
-            $order->update([
-                'stripe_payment_intent_id' => $paymentIntent->id,
-            ]);
+                // Save payment intent ID to order
+                $order->update([
+                    'stripe_payment_intent_id' => $paymentIntent->id,
+                ]);
+            }
 
-            return Inertia::render('payment/Stripe', [
+            return Inertia::render('shop/Stripe', [
                 'order' => [
                     'id' => $order->id,
                     'order_number' => $order->order_number,
-                    'total_amount' => $order->total_amount,
+                    'total_amount' => (float) $order->total_amount, // Ensure it's a float
                 ],
                 'clientSecret' => $paymentIntent->client_secret,
                 'stripePublicKey' => config('services.stripe.key'),
             ]);
 
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            Log::error('Stripe API Error: ' . $e->getMessage());
+            return back()->with('error', 'Payment initialization failed. Please try again.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Makse loomine ebaõnnestus: ' . $e->getMessage());
+            Log::error('Payment Error: ' . $e->getMessage());
+            return back()->with('error', 'An unexpected error occurred. Please try again.');
         }
     }
 
@@ -70,66 +90,92 @@ class PaymentController extends Controller
             if ($paymentIntent->status === 'succeeded') {
                 $order->update([
                     'payment_status' => 'paid',
-                    'stripe_payment_intent_id' => $paymentIntent->id,
+                    'status' => 'processing',
                 ]);
 
-                // Tühjenda ostukorv
+                // Clear cart
                 auth()->user()->cartItems()->delete();
 
                 return redirect()->route('orders.show', $order)
-                    ->with('success', 'Makse õnnestus! Tellimus on kinnitatud.');
+                    ->with('success', 'Payment successful! Your order has been confirmed.');
             }
 
-            return back()->with('error', 'Makse ei õnnestunud.');
+            return back()->with('error', 'Payment was not successful.');
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Makse kinnitamine ebaõnnestus: ' . $e->getMessage());
+            Log::error('Payment confirmation error: ' . $e->getMessage());
+            return back()->with('error', 'Payment confirmation failed: ' . $e->getMessage());
         }
     }
 
-    public function paypal(Order $order)
+    // Only include webhook method if you have webhook secret configured
+    public function stripeWebhook(Request $request)
     {
-        if ($order->user_id !== auth()->id()) {
-            abort(403);
+        $endpoint_secret = config('services.stripe.webhook_secret');
+
+        // If no webhook secret is configured, return early
+        if (!$endpoint_secret) {
+            return response()->json(['error' => 'Webhook not configured'], 400);
         }
 
-        if ($order->payment_status !== 'pending') {
-            return redirect()->route('orders.show', $order)
-                ->with('info', 'See tellimus on juba töödeldud.');
+        $payload = $request->getContent();
+        $sig_header = $request->header('Stripe-Signature');
+
+        try {
+            $event = \Stripe\Webhook::constructEvent(
+                $payload,
+                $sig_header,
+                $endpoint_secret
+            );
+        } catch (\UnexpectedValueException $e) {
+            return response()->json(['error' => 'Invalid payload'], 400);
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            return response()->json(['error' => 'Invalid signature'], 400);
         }
 
-        return Inertia::render('payment/Paypal', [
-            'order' => [
-                'id' => $order->id,
-                'order_number' => $order->order_number,
-                'total_amount' => $order->total_amount,
-            ],
-            'paypalClientId' => config('services.paypal.client_id'),
-        ]);
+        // Handle the event
+        switch ($event->type) {
+            case 'payment_intent.succeeded':
+                $paymentIntent = $event->data->object;
+                $this->handlePaymentSuccess($paymentIntent);
+                break;
+
+            case 'payment_intent.payment_failed':
+                $paymentIntent = $event->data->object;
+                $this->handlePaymentFailure($paymentIntent);
+                break;
+
+            default:
+                Log::info('Unhandled Stripe event type: ' . $event->type);
+        }
+
+        return response()->json(['status' => 'success']);
     }
 
-    public function paypalSuccess(Request $request, Order $order)
+    private function handlePaymentSuccess($paymentIntent)
     {
-        if ($order->user_id !== auth()->id()) {
-            abort(403);
+        $order = Order::where('stripe_payment_intent_id', $paymentIntent->id)->first();
+
+        if ($order) {
+            $order->update([
+                'payment_status' => 'paid',
+                'status' => 'processing',
+            ]);
+
+            Log::info('Payment successful for order: ' . $order->order_number);
         }
+    }
 
-        $validated = $request->validate([
-            'orderID' => 'required|string',
-        ]);
+    private function handlePaymentFailure($paymentIntent)
+    {
+        $order = Order::where('stripe_payment_intent_id', $paymentIntent->id)->first();
 
-        // PayPal makse kinnitamine
-        // Siin peaks olema PayPal API kutse, et kinnitada makse
-        // Lihtsustatud versioon:
+        if ($order) {
+            $order->update([
+                'payment_status' => 'failed',
+            ]);
 
-        $order->update([
-            'payment_status' => 'paid',
-        ]);
-
-        // Tühjenda ostukorv
-        auth()->user()->cartItems()->delete();
-
-        return redirect()->route('orders.show', $order)
-            ->with('success', 'Makse õnnestus! Tellimus on kinnitatud.');
+            Log::warning('Payment failed for order: ' . $order->order_number);
+        }
     }
 }
