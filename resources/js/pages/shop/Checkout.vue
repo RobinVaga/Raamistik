@@ -81,7 +81,7 @@ const isFormValid = computed(() => {
         form.city.trim() !== '' &&
         form.postal_code.trim() !== '' &&
         form.country.trim() !== '' &&
-        form.payment_method !== 'stripe'
+        (form.payment_method === 'stripe' || form.payment_method === 'paypal')
     )
 })
 
@@ -127,27 +127,6 @@ const handleSubmit = () => {
                         <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">
                             Checkout
                         </h2>
-
-                        <!-- Error Alert -->
-                        <div 
-                            v-if="Object.keys(form.errors).length > 0" 
-                            class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
-                        >
-                            <div class="flex items-start gap-3">
-                                <AlertCircle class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                                <div class="flex-1">
-                                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
-                                        Please fix the following errors:
-                                    </h3>
-                                    <ul class="text-sm text-red-700 dark:text-red-300 list-disc list-inside space-y-1">
-                                        <li v-for="(error, key) in form.errors" :key="key">
-                                            {{ error }}
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <!-- Left Column - Forms -->
                             <div class="lg:col-span-2 space-y-6">
@@ -332,22 +311,34 @@ const handleSubmit = () => {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <RadioGroup v-model="form.payment_method" class="space-y-3">
+                                        <div class="space-y-3">
                                             <div class="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                                <RadioGroupItem value="stripe" id="stripe" />
+                                                <input
+                                                    type="radio"
+                                                    id="stripe"
+                                                    value="stripe"
+                                                    v-model="form.payment_method"
+                                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                />
                                                 <Label for="stripe" class="flex items-center gap-2 cursor-pointer flex-1 text-gray-700 dark:text-gray-300">
                                                     <CreditCard class="w-5 h-5" />
                                                     <span>Credit Card (Stripe)</span>
                                                 </Label>
                                             </div>
                                             <div class="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                                <RadioGroupItem value="paypal" id="paypal" />
+                                                <input
+                                                    type="radio"
+                                                    id="paypal"
+                                                    value="paypal"
+                                                    v-model="form.payment_method"
+                                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                />
                                                 <Label for="paypal" class="flex items-center gap-2 cursor-pointer flex-1 text-gray-700 dark:text-gray-300">
                                                     <Wallet class="w-5 h-5" />
                                                     <span>PayPal</span>
                                                 </Label>
                                             </div>
-                                        </RadioGroup>
+                                        </div>
                                         <p v-if="form.errors.payment_method" class="mt-2 text-sm text-red-500">
                                             {{ form.errors.payment_method }}
                                         </p>
@@ -406,7 +397,7 @@ const handleSubmit = () => {
                                             </div>
                                             <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                                                 <span>Shipping</span>
-                                                <span>Calculated at next step</span>
+                                                <span>Free</span>
                                             </div>
                                             <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-gray-100 pt-2 border-t border-gray-200 dark:border-gray-700">
                                                 <span>Total</span>
