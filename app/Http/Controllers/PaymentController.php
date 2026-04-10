@@ -73,40 +73,73 @@ class PaymentController extends Controller
     }
 
     public function stripeSuccess(Request $request, Order $order)
-    {
-        if ($order->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        $validated = $request->validate([
-            'payment_intent' => 'required|string',
-        ]);
-
-        Stripe::setApiKey(config('services.stripe.secret'));
-
-        try {
-            $paymentIntent = PaymentIntent::retrieve($validated['payment_intent']);
-
-            if ($paymentIntent->status === 'succeeded') {
-                $order->update([
-                    'payment_status' => 'paid',
-                    'status' => 'processing',
-                ]);
-
-                // Clear cart
-                auth()->user()->cartItems()->delete();
-
-                return redirect()->route('orders.show', $order)
-                    ->with('success', 'Payment successful! Your order has been confirmed.');
-            }
-
-            return back()->with('error', 'Payment was not successful.');
-
-        } catch (\Exception $e) {
-            Log::error('Payment confirmation error: ' . $e->getMessage());
-            return back()->with('error', 'Payment confirmation failed: ' . $e->getMessage());
-        }
+{
+    if ($order->user_id !== auth()->id()) {
+        abort(403);
     }
+
+    $validated = $request->validate([
+        'payment_intent' => 'required|string',
+    ]);
+
+    Stripe::setApiKey(config('services.stripe.secret'));
+
+    try {
+        $paymentIntent = PaymentIntent::retrieve($validated['payment_intent']);
+
+        if ($paymentIntent->status === 'succeeded') {
+            $order->update([
+                'payment_status' => 'paid',
+                'status' => 'processing',
+            ]);
+
+            // Clear cart
+            auth()->user()->cartItems()->delete();
+
+            // Load order relationships for the success page
+            $order->load('items.product');
+
+            // Redirect to the new SuccessfulPayment view instead of orders.show
+            return Inertia::render('shop/Succesful_payment', [
+                'order' => [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'first_name' => $order->first_name,
+                    'last_name' => $order->last_name,
+                    'email' => $order->email,
+                    'phone' => $order->phone,
+                    'address' => $order->address ?? '',
+                    'city' => $order->city ?? '',
+                    'postal_code' => $order->postal_code ?? '',
+                    'country' => $order->country ?? '',
+                    'total_amount' => $order->total_amount,
+                    'payment_status' => $order->payment_status,
+                    'payment_method' => $order->payment_method,
+                    'created_at' => $order->created_at->format('Y-m-d H:i'),
+                    'items' => $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'product_name' => $item->product_name,
+                            'product_price' => $item->product_price,
+                            'quantity' => $item->quantity,
+                            'subtotal' => $item->subtotal,
+                            'product' => $item->product ? [
+                                'id' => $item->product->id,
+                                'image' => $item->product->image,
+                            ] : null,
+                        ];
+                    }),
+                ],
+            ]);
+        }
+
+        return back()->with('error', 'Payment was not successful.');
+
+    } catch (\Exception $e) {
+        Log::error('Payment confirmation error: ' . $e->getMessage());
+        return back()->with('error', 'Payment confirmation failed: ' . $e->getMessage());
+    }
+}
 
     // Only include webhook method if you have webhook secret configured
     public function stripeWebhook(Request $request)
