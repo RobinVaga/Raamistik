@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Cache;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Home');
+    return Inertia::render('Welcome');
 })->name('home');
 
 
@@ -82,9 +82,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/mailable', function () {
-    return new Timetable($timetableEvents, $startDate, $endDate);
-});
+// Route::get('/mailable', function () {
+//     return new Timetable($timetableEvents, $startDate, $endDate);
+// });
 
  Route::get('/movies', [MovieController::class, 'index'])->name('movies.index');
     Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
