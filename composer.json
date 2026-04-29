@@ -18,11 +18,11 @@
         "laravel/wayfinder": "^0.1.9",
         "socialiteproviders/google": "^4.1",
         "socialiteproviders/zoho": "^4.1",
-        "stripe/stripe-php": "^20.0"
+        "stripe/stripe-php": "^20.0",
+        "fakerphp/faker": "^1.24"
     },
     "require-dev": {
         "deployer/deployer": "^7.5",
-        "fakerphp/faker": "^1.24",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
