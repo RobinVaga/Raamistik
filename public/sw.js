@@ -1,3 +1,4 @@
+
 "use strict";
 
 const CACHE_NAME = "offline-cache-v1";
@@ -12,9 +13,26 @@ self.addEventListener("install", (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => cache.addAll(filesToCache))
     );
+    self.skipWaiting();
 });
 
 self.addEventListener("fetch", (event) => {
+    const url = new URL(event.request.url);
+    
+    // Skip service worker for:
+    // 1. Same-origin requests with query parameters
+    // 2. Requests with X-Inertia header (Inertia partial reloads)
+    // 3. POST/PUT/DELETE/PATCH requests (forms, logout, etc.)
+    // 4. API requests
+    if (
+        (url.origin === location.origin && url.search) ||
+        event.request.headers.get('X-Inertia') ||
+        event.request.method !== 'GET' ||
+        url.pathname.startsWith('/api/')
+    ) {
+        return; // Let the browser handle it directly
+    }
+    
     if (event.request.mode === 'navigate') {
         event.respondWith(
             fetch(event.request)
@@ -44,4 +62,5 @@ self.addEventListener('activate', (event) => {
             );
         })
     );
+    self.clients.claim();
 });

@@ -3,31 +3,55 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     */
-    public function __invoke(Request $request)
+    public function index(Request $request): Response
     {
-
-
-        $value = Cache::remember('weather', now()->addHour(), function () {
-            $response = Http::get('https://api.openweathermap.org/data/2.5/weather', [
-                'q' => 'Tallinn',
-                'appid' => config('services.weather.key'),
+        $city = $request->input('city', 'Kuressaare');
+        $apiKey = config('services.weather.key');
+        
+        $weather = null;
+        
+        try {
+            $response = Http::timeout(10)->get('https://api.openweathermap.org/data/2.5/weather', [
+                'q' => $city,
+                'appid' => $apiKey,
                 'units' => 'metric',
             ]);
-            return $response->json();
-        });
 
-        
+            if ($response->successful()) {
+                $weather = $response->json();
+                Log::info('Weather API Success', [
+                    'city' => $city,
+                    'data' => $weather
+                ]);
+            } else {
+                Log::error('Weather API Error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'city' => $city
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Weather API Exception', [
+                'message' => $e->getMessage(),
+                'city' => $city
+            ]);
+        }
+
+        // Debug: Log what we're sending to Inertia
+        Log::info('Sending to Inertia', [
+            'weather' => $weather,
+            'city' => $city
+        ]);
+
         return Inertia::render('Dashboard', [
-            'weather' => $value,
+            'weather' => $weather,
         ]);
     }
 }

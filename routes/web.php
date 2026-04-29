@@ -8,6 +8,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\MovieController;
 use App\Mail\Timetable;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
@@ -85,6 +86,8 @@ Route::get('/mailable', function () {
     return new Timetable($timetableEvents, $startDate, $endDate);
 });
 
+ Route::get('/movies', [MovieController::class, 'index'])->name('movies.index');
+    Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
 // Shop routes
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/shop/{product}', [ShopController::class, 'show'])->name('shop.show');

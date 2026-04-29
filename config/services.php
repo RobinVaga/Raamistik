@@ -46,4 +46,8 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
     ],
+    'tmdb' => [
+        'api_key' => env('TMDB_API_KEY'),
+        'api_token' => env('TMDB_API_TOKEN')
+    ],
 ];
