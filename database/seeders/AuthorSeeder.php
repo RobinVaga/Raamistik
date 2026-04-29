@@ -15,10 +15,10 @@ class AuthorSeeder extends Seeder
      
     public function run(): void
     { 
-        Author::factory()->count(100)
+        Author::factory()->count(10)
             ->has(
-                Post::factory(3)
-                    ->has(Comment::factory(3), 'comments'),
+                Post::factory(2)
+                    ->has(Comment::factory(2), 'comments'),
                 'posts'
             )
             ->create();
