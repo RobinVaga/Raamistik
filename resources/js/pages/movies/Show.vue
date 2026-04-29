@@ -238,14 +238,6 @@ const getInitials = (name: string) => {
                                         Back to Movies
                                     </Link>
                                 </Button>
-                                <Button
-                                    v-if="mainTrailer"
-                                    variant="outline"
-                                    @click="window.open(`https://www.youtube.com/watch?v=${mainTrailer.key}`, '_blank')"
-                                >
-                                    <Play class="mr-2 h-4 w-4" />
-                                    Watch Trailer
-                                </Button>
                             </div>
                         </div>
                     </div>

@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AuthorSeeder::class,
             // PostSeeder::class,
+            // CommentSeeder::class,
             ProductSeeder::class,
             ReviewSeeder::class,
         ]);
