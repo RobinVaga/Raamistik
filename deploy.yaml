@@ -28,7 +28,7 @@ tasks:
     - 'artisan:config:clear'
     - 'artisan:view:clear'
     - 'artisan:route:clear'
-    - 'artisan:migrate'
+    - 'artisan:migrate:fresh'
     - 'deploy:publish'
 
 after:
