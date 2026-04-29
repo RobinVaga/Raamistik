@@ -13,21 +13,6 @@ hosts:
     deploy_path: '~/domeenid/www.ta24vaga.itmajakas.ee/bookstore'
 
 tasks:
-  env:setup:
-  - run: 'cat > {{release_path}}/.env << EOF
-APP_NAME=Bookstore
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://bookstore.ta24vaga.itmajakas.ee
-
-LOG_CHANNEL=stack
-LOG_LEVEL=info
-
-SESSION_DRIVER=database
-
-CACHE_STORE=file
-EOF'
-
   npm:production:
   - run: 'cd {{release_path}} && npm ci'
   - run: 'cd {{release_path}} && npx vite build'
@@ -37,7 +22,6 @@ EOF'
 
   deploy:
     - 'deploy:prepare'
-    - 'env:setup'
     - 'deploy:vendors'
     - 'npm:production'
     - 'artisan:storage:link'
