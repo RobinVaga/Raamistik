@@ -29,7 +29,7 @@ defineProps<{
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="mb-6 flex items-center justify-between">
-                    <h2 class="text-2xl font-semibold text-white">
+                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-neutral-100">
                         Shop
                     </h2>
                     
@@ -45,22 +45,22 @@ defineProps<{
                     </Link>
                 </div>
 
-                <div class="overflow-hidden bg-black shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
+                <div class="overflow-hidden bg-white dark:bg-neutral-900 shadow-sm sm:rounded-lg">
+                    <div class="p-6">
                         <div
                             class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
                         >
                             <div
                                 v-for="product in products"
                                 :key="product.id"
-                                class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                                class="overflow-hidden rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm transition-shadow hover:shadow-md"
                             >
                                 <Link
                                     :href="`/shop/${product.id}`"
                                     class="block"
                                 >
                                     <div
-                                        class="aspect-square w-full overflow-hidden bg-gray-200"
+                                        class="aspect-square w-full overflow-hidden bg-gray-200 dark:bg-neutral-700"
                                     >
                                         <img
                                             v-if="product.image"
@@ -70,7 +70,7 @@ defineProps<{
                                         />
                                         <div
                                             v-else
-                                            class="flex h-full items-center justify-center text-gray-400"
+                                            class="flex h-full items-center justify-center text-gray-400 dark:text-neutral-500"
                                         >
                                             No Image
                                         </div>
@@ -78,13 +78,13 @@ defineProps<{
 
                                     <div class="p-4">
                                         <h3
-                                            class="mb-2 text-lg font-semibold text-gray-900"
+                                            class="mb-2 text-lg font-semibold text-gray-900 dark:text-neutral-100"
                                         >
                                             {{ product.name }}
                                         </h3>
 
                                         <p
-                                            class="mb-3 line-clamp-2 text-sm text-gray-600"
+                                            class="mb-3 line-clamp-2 text-sm text-gray-600 dark:text-neutral-300"
                                         >
                                             {{ product.description }}
                                         </p>
@@ -101,7 +101,7 @@ defineProps<{
                                                         star <=
                                                         product.average_rating
                                                             ? 'text-yellow-400'
-                                                            : 'text-gray-300'
+                                                            : 'text-gray-300 dark:text-neutral-600'
                                                     "
                                                     fill="currentColor"
                                                     viewBox="0 0 20 20"
@@ -111,7 +111,7 @@ defineProps<{
                                                     />
                                                 </svg>
                                             </div>
-                                            <span class="text-sm text-gray-600">
+                                            <span class="text-sm text-gray-600 dark:text-neutral-400">
                                                 ({{ product.review_count }})
                                             </span>
                                         </div>
@@ -120,7 +120,7 @@ defineProps<{
                                             class="flex items-center justify-between"
                                         >
                                             <span
-                                                class="text-xl font-bold text-gray-900"
+                                                class="text-xl font-bold text-gray-900 dark:text-neutral-100"
                                             >
                                                 €{{ product.price }}
                                             </span>
@@ -128,8 +128,8 @@ defineProps<{
                                                 class="text-sm"
                                                 :class="
                                                     product.stock_quantity > 0
-                                                        ? 'text-green-600'
-                                                        : 'text-red-600'
+                                                        ? 'text-green-600 dark:text-green-400'
+                                                        : 'text-red-600 dark:text-red-400'
                                                 "
                                             >
                                                 {{
@@ -148,7 +148,7 @@ defineProps<{
                             v-if="products.length === 0"
                             class="py-12 text-center"
                         >
-                            <p class="text-gray-500">
+                            <p class="text-gray-500 dark:text-neutral-400">
                                 No products available at the moment.
                             </p>
                         </div>

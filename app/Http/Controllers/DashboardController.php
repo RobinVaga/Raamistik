@@ -28,7 +28,7 @@ class DashboardController extends Controller
                 $weather = $response->json();
                 Log::info('Weather API Success', [
                     'city' => $city,
-                    'data' => $weather
+                    'returned_city' => $weather['name'] ?? 'unknown'
                 ]);
             } else {
                 Log::error('Weather API Error', [
@@ -43,12 +43,6 @@ class DashboardController extends Controller
                 'city' => $city
             ]);
         }
-
-        // Debug: Log what we're sending to Inertia
-        Log::info('Sending to Inertia', [
-            'weather' => $weather,
-            'city' => $city
-        ]);
 
         return Inertia::render('Dashboard', [
             'weather' => $weather,

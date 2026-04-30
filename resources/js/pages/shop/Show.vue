@@ -57,12 +57,12 @@ const addToCart = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                <div class="overflow-hidden bg-white dark:bg-neutral-900 shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <!-- Product Details -->
                         <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                             <!-- Product Image -->
-                            <div class="overflow-hidden rounded-lg bg-gray-200">
+                            <div class="overflow-hidden rounded-lg bg-gray-200 dark:bg-neutral-800">
                                 <img
                                     v-if="product.image"
                                     :src="product.image"
@@ -71,7 +71,7 @@ const addToCart = () => {
                                 />
                                 <div
                                     v-else
-                                    class="flex h-96 items-center justify-center text-gray-400"
+                                    class="flex h-96 items-center justify-center text-gray-400 dark:text-neutral-500"
                                 >
                                     No Image Available
                                 </div>
@@ -79,7 +79,7 @@ const addToCart = () => {
 
                             <!-- Product Info -->
                             <div class="flex flex-col">
-                                <h1 class="mb-4 text-3xl font-bold text-gray-900">
+                                <h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-neutral-100">
                                     {{ product.name }}
                                 </h1>
 
@@ -93,7 +93,7 @@ const addToCart = () => {
                                             :class="
                                                 star <= product.average_rating
                                                     ? 'text-yellow-400'
-                                                    : 'text-gray-300'
+                                                    : 'text-gray-300 dark:text-neutral-600'
                                             "
                                             fill="currentColor"
                                             viewBox="0 0 20 20"
@@ -103,14 +103,14 @@ const addToCart = () => {
                                             />
                                         </svg>
                                     </div>
-                                    <span class="text-sm text-gray-600">
+                                    <span class="text-sm text-gray-600 dark:text-neutral-400">
                                         {{ product.average_rating.toFixed(1) }} ({{ product.review_count }} reviews)
                                     </span>
                                 </div>
 
                                 <!-- Price -->
                                 <div class="mb-4">
-                                    <span class="text-3xl font-bold text-gray-900">
+                                    <span class="text-3xl font-bold text-gray-900 dark:text-neutral-100">
                                         €{{ product.price }}
                                     </span>
                                 </div>
@@ -121,8 +121,8 @@ const addToCart = () => {
                                         class="text-sm font-medium"
                                         :class="
                                             product.stock_quantity > 0
-                                                ? 'text-green-600'
-                                                : 'text-red-600'
+                                                ? 'text-green-600 dark:text-green-400'
+                                                : 'text-red-600 dark:text-red-400'
                                         "
                                     >
                                         {{
@@ -135,17 +135,17 @@ const addToCart = () => {
 
                                 <!-- Description -->
                                 <div class="mb-6">
-                                    <h2 class="mb-2 text-lg font-semibold text-gray-900">
+                                    <h2 class="mb-2 text-lg font-semibold text-gray-900 dark:text-neutral-100">
                                         Description
                                     </h2>
-                                    <p class="text-gray-600">
+                                    <p class="text-gray-600 dark:text-neutral-300">
                                         {{ product.description }}
                                     </p>
                                 </div>
 
                                 <!-- SKU -->
                                 <div class="mb-6">
-                                    <span class="text-sm text-gray-500">
+                                    <span class="text-sm text-gray-500 dark:text-neutral-400">
                                         SKU: {{ product.sku }}
                                     </span>
                                 </div>
@@ -172,7 +172,7 @@ const addToCart = () => {
                                             {{ product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart' }}
                                         </Button>
                                     </div>
-                                    <p v-if="cartForm.errors.quantity" class="text-sm text-red-600">
+                                    <p v-if="cartForm.errors.quantity" class="text-sm text-red-600 dark:text-red-400">
                                         {{ cartForm.errors.quantity }}
                                     </p>
                                 </form>
@@ -181,7 +181,7 @@ const addToCart = () => {
 
                         <!-- Reviews Section -->
                         <div class="mt-12">
-                            <h2 class="mb-6 text-2xl font-bold text-gray-900">
+                            <h2 class="mb-6 text-2xl font-bold text-gray-900 dark:text-neutral-100">
                                 Customer Reviews
                             </h2>
 
@@ -189,14 +189,14 @@ const addToCart = () => {
                                 <div
                                     v-for="review in product.reviews"
                                     :key="review.id"
-                                    class="rounded-lg border border-gray-200 p-6"
+                                    class="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6"
                                 >
                                     <div class="mb-3 flex items-center justify-between">
                                         <div>
-                                            <p class="font-semibold text-gray-900">
+                                            <p class="font-semibold text-gray-900 dark:text-neutral-100">
                                                 {{ review.customer_name }}
                                             </p>
-                                            <p class="text-sm text-gray-500">
+                                            <p class="text-sm text-gray-500 dark:text-neutral-400">
                                                 {{ review.created_at }}
                                             </p>
                                         </div>
@@ -208,7 +208,7 @@ const addToCart = () => {
                                                 :class="
                                                     star <= review.rating
                                                         ? 'text-yellow-400'
-                                                        : 'text-gray-300'
+                                                        : 'text-gray-300 dark:text-neutral-600'
                                                 "
                                                 fill="currentColor"
                                                 viewBox="0 0 20 20"
@@ -219,14 +219,14 @@ const addToCart = () => {
                                             </svg>
                                         </div>
                                     </div>
-                                    <p class="text-gray-700">
+                                    <p class="text-gray-700 dark:text-neutral-300">
                                         {{ review.comment }}
                                     </p>
                                 </div>
                             </div>
 
-                            <div v-else class="rounded-lg border border-gray-200 p-12 text-center">
-                                <p class="text-gray-500">
+                            <div v-else class="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-12 text-center">
+                                <p class="text-gray-500 dark:text-neutral-400">
                                     No reviews yet. Be the first to review this product!
                                 </p>
                             </div>

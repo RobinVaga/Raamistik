@@ -9,6 +9,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\MovieController;
+use App\Http\Controllers\DashboardController;
 use App\Mail\Timetable;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
@@ -33,26 +34,8 @@ Route::get('/', function () {
 */
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        $weather = Cache::remember('weather_tallinn', 1800, function () {
-            try {
-                $response = Http::get('https://api.openweathermap.org/data/2.5/weather', [
-                    'q' => 'Kuressaare,EE',
-                    'appid' => env('WEATHER_API_KEY'),
-                    'units' => 'metric'
-                ]);
-                if ($response->successful()) {
-                    return $response->json();
-                }
-            } catch (\Exception $e) {
-                return null;
-            }
-        });
-
-        return Inertia::render('Dashboard', [
-            'weather' => $weather
-        ]);
-    })->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
     
     Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
