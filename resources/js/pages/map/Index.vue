@@ -24,19 +24,19 @@ defineProps<{
     <AppLayout>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-black overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white dark:bg-neutral-900 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <div>
-                                <h2 class="text-2xl font-bold text-black">Interaktiivne Kaart</h2>
-                                <p class="text-white">Kliki kaardil, et lisada uus marker</p>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-neutral-100">Interaktiivne Kaart</h2>
+                                <p class="text-gray-600 dark:text-neutral-400">Kliki kaardil, et lisada uus marker</p>
                             </div>
-                            <div class="text-sm text-white">
+                            <div class="text-sm text-gray-600 dark:text-neutral-400">
                                 Markereid kokku: {{ markers.length }}
                             </div>
                         </div>
 
-                        <div class="h-[600px] rounded-lg border-2 border-gray-300 shadow-lg overflow-hidden">
+                        <div class="h-[600px] rounded-lg border-2 border-gray-300 dark:border-neutral-700 shadow-lg overflow-hidden">
                             <MapView />
                         </div>
                     </div>
